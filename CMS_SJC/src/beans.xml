@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+       	   http://www.springframework.org/schema/aop 
+       	   http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<!-- 使用注解来配置bean -->
+	<context:annotation-config />
+	<!-- 在spring容器初始化的时候默认找该包下的含注解为@COMPONENT的类初始化 -->
+	<context:component-scan base-package="cn.hbuas.registration" />
+	<!-- 配置数据源 -->
+	<bean id="dataSource" destroy-method="close"
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/sjc" />
+		<property name="username" value="root" />
+		<property name="password" value="123456" />
+	</bean>
+	<!-- 配置SessionFactory -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan">
+			<list>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<value>
+				hibernate.dialect=org.hibernate.dialect.MySQLDialect
+				hibernate.show_sql=true
+				hibernate.format_sql=true
+      </value>
+		</property>
+	</bean>
+
+	<!-- 配置事务管理器 -->
+	<bean id="myTxManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<!-- 定义切点
+		<aop:config>
+			<aop:pointcut id="productServiceMethods"
+				expression="execution(public * cn.hbuas.registration.service..*.*(..))" />
+			<aop:advisor advice-ref="txAdvice" pointcut-ref="productServiceMethods" />
+		</aop:config>
+	-->
+	<!--<tx:advice id="txAdvice" transaction-manager="myTxManager">
+		<tx:attributes>
+			<tx:method name="exists" read-only="true" />
+			<tx:method name="add*"/>
+		</tx:attributes>
+	</tx:advice>
+	--><!-- 将hibernate的SessionFactory交给HibernateTemplate来管理 -->
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+</beans>
